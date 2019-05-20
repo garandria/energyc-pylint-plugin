@@ -16,8 +16,6 @@ def iteration():
 class WhileVisitor(ast.NodeVisitor):
     def __init__(self):
         self._var_name = None
-        self._slice = False
-        self._cpt = 0
 
 
     def visit_While(self, node):
