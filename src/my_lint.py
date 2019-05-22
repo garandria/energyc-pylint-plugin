@@ -14,34 +14,41 @@ def iteration():
 """
 
 class WhileVisitor(ast.NodeVisitor):
+
+    
     def __init__(self):
-        self._var_name = None
+        self._is_suspicious = False
 
-
+        
     def visit_While(self, node):
         print("=> WHILE")
         # look for the variable in the comparison
         if isinstance(node.test, ast.Compare):
             op = node.test.ops[0]
+            var_name = None
             print("\toperator : {}".format(op))
             if isinstance(op, _ast.Lt) or isinstance(op, _ast.LtE):
                 # var {< | <=} var'
-                self._var_name = node.test.left.id
+                var_name = node.test.left.id
             else:
                 # var {> | >=} var'
-                self.var_name = node.test.comparators[0].id
+                var_name = node.test.comparators[0].id
         else:
             return
-        print("\tvar_name : {}".format(self._var_name))
-        body_visitor = WhileBodyVisitor(self._var_name)
+        print("\tvar_name : {}".format(var_name))
+        body_visitor = WhileBodyVisitor(var_name)
         body_visitor.visit(node)
+        self._is_suspicious = 0 < body_visitor.get_cpt() <= 3 \
+          and body_visitor.get_in_slice
         print("{")
         print("\tname : {}".format(body_visitor.get_var_name()))
         print("\tcpt : {}".format(body_visitor.get_cpt()))
         print("\tin_slice : {}".format(body_visitor.get_in_slice()))
         print("}")
         print("<= WHILE")
-        
+
+    def is_suspicious(self):
+        return self._is_suspicious
         
 class WhileBodyVisitor(ast.NodeVisitor):
 
@@ -114,18 +121,43 @@ class WhileBodyVisitor(ast.NodeVisitor):
         if self._is_var_name(node.n):
             self._incr_cpt()
     
-    
+
+class map_modification(ast.NodeVisitor):
+
+    self._data_structures = {"set", "list", "dict"}
+
+    def visit_Call(self, node):
+        if isinstance(node.func, ast.Name):
+            # J'ai choisi d'itérer sur node.args pour le
+            # moment mais il faudra trouver un moyen d'acceder
+            # directement à un élément
+            if node.func.id == "list":
+                for elt in node.args:
+                    if isinstance(elt, ast.Call):
+                        if elt.func.id == "map":
+                            print("Use comprehension instead !")
+            return
+                        
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("filename", help="File to check",
                         type=str)
+
     args = parser.parse_args()
     tree = None
     with open(args.filename, "r") as stream:
         tree = ast.parse(stream.read())
     # tree = ast.parse(fct)
+    if tree is None:
+        return
     check = WhileVisitor()
     check.visit(tree)
+    if check.is_suspicious():
+        print("SUSPICIOUS ITERATION")
+    check = map_modification()
+    check.visit(tree)
+    
         
 if __name__ == '__main__':
     main()
