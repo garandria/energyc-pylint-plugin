@@ -21,7 +21,8 @@ EMACS](https://www.gnu.org/software/emacs/) for example)
 
 + if the name of the directory is /path/to/your/directory/, then add
 this line at the end of your `~/bashrc` :
-````
+
+```
 export PYTHONPATH=/path/to/your/directory/
 ```
 
