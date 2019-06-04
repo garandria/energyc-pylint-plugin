@@ -33,7 +33,10 @@ class map_modification(BaseChecker):
     def visit_call(self, node):
         if isinstance(node.func, astroid.Name) \
           and node.func.name in self._ds_conversion:
-            if node.args and node.args[0].func.name == 'map':
+            if node.args\
+              and isinstance(node.args[0], astroid.Call)\
+              and isinstance(node.args[0].func, astroid.Name)\
+              and node.args[0].func.name == 'map':
                 self.add_message(
                     'map-modification',
                     node=node,
