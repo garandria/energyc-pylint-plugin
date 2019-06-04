@@ -3,10 +3,10 @@ from pylint.checkers import BaseChecker
 from pylint.interfaces import IAstroidChecker
 
 
-
 class while_iteration_checker(BaseChecker):
     __implements__ = IAstroidChecker
-    
+
+    _CPT = 1
     name = 'while-iteration'
     priority = -3
     msgs = {
@@ -62,7 +62,7 @@ class while_iteration_checker(BaseChecker):
             
 
     def _is_suspicious(self):
-        return 0 <  self._cpt <= 3 and self._var_in_slice
+        return 0 <  self._cpt == self._CPT and self._var_in_slice
 
     
     def _incr_cpt(self):
