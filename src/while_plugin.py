@@ -39,14 +39,20 @@ class while_iteration_checker(BaseChecker):
         
 
     def visit_while(self, node):
-        self._in_while = True
         if self._var_name is None:
             if isinstance(node.test, astroid.Compare):
+                self._in_while = True
                 op = node.test.ops[0][0]
                 if op in {'<', '<='}:
-                    self._var_name = node.test.left.name
+                    if isinstance(node.test.left, astroid.Name):
+                        self._var_name = node.test.left.name
+                    elif isinstance(node.test.left, astroid.Attribute):
+                        self._var_name = node.test.left.attrname
                 elif op in {'>', '>='}:
-                    self._var_name = node.test.ops[0][1].Name                    
+                    if isinstance(node.test.left, astroid.Name):
+                        self._var_name = node.test.ops[0][1].name
+                    elif isinstance(node.test.left, astroid.Attribute):
+                        self._var_name = node.test.ops[0][1].attrname
 
                     
     def leave_while(self, node):
@@ -62,7 +68,7 @@ class while_iteration_checker(BaseChecker):
             
 
     def _is_suspicious(self):
-        return 0 <  self._cpt == self._CPT and self._var_in_slice
+        return 0 <  self._cpt == self._CPT and self._in_slice
 
     
     def _incr_cpt(self):
@@ -86,12 +92,15 @@ class while_iteration_checker(BaseChecker):
                         
     def visit_subscript(self, node):
         if self._in_while:
-            if isinstance(node.slice.value, astroid.Attribute):
-                if self._is_var_name(node.slice.value.attrname):
-                    self._var_in_slice = True
-            elif isinstance(node.slice.value, astroid.Name):
-                if self._is_var_name(node.slice.value.name):
-                    self._var_in_slice = True
+            if isinstance(node.slice, astroid.Index):
+                if isinstance(node.slice.value, astroid.Attribute):
+                    if self._is_var_name(node.slice.value.attrname)\
+                      and not self._in_slice:
+                        self._in_slice = True
+                elif isinstance(node.slice.value, astroid.Name):
+                    if self._is_var_name(node.slice.value.name)\
+                    and not self._in_slice:
+                        self._in_slice = True
 
     
 def register(linter):
