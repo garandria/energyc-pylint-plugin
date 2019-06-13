@@ -68,13 +68,9 @@ class while_iteration_checker(BaseChecker):
             
 
     def _is_suspicious(self):
-        return 0 <  self._cpt == self._CPT and self._in_slice
+        return self._cpt == self._CPT and self._in_slice
 
     
-    def _incr_cpt(self):
-        self._cpt += 1
-        
-
     def _is_var_name(self, name):
         return self._var_name == name
         
@@ -84,10 +80,10 @@ class while_iteration_checker(BaseChecker):
             if node.op == '+=':
                 if isinstance(node.target, astroid.AssignAttr):
                     if self._is_var_name(node.target.attrname):
-                        self._incr_cpt()
+                        self._cpt += 1
                 elif isinstance(node.target, astroid.AssignName):
                     if self._is_var_name(node.target.name):
-                        self._incr_cpt()
+                        self._cpt += 1
 
                         
     def visit_subscript(self, node):
