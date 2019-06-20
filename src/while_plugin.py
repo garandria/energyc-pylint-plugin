@@ -53,6 +53,7 @@ class while_iteration_checker(BaseChecker):
                         self._var_name = node.test.ops[0][1].name
                     elif isinstance(node.test.left, astroid.Attribute):
                         self._var_name = node.test.ops[0][1].attrname
+                          
 
                     
     def leave_while(self, node):
